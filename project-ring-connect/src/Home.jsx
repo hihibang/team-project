@@ -12,7 +12,6 @@ function Home() {
     try {
       localStorage.setItem('myUsername', userName.trim());
       alert("입장 성공!");
-      navigate('/main');
     } catch (error) {
       alert("서버 연결 실패");
     }
@@ -29,10 +28,11 @@ function Home() {
     <div>
       <h2>입장하기</h2>
       <input 
-        value={userName} 
-        onChange={(e) => setUserName(e.target.value)} 
-        placeholder="이름을 입력하세요"
-      />
+       autoFocus 
+       onMouseEnter={(e) => e.target.focus()}
+       value={userName} 
+       onChange={(e) => setUserName(e.target.value)} 
+       placeholder="이름을 입력하세요"/>
       <button onClick={handleJoin}>시작</button>
       <button onClick={handleLogout} style={{ marginLeft: '10px', color: 'red' }}>
         로그아웃

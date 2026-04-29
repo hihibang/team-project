@@ -1,31 +1,45 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 function MyPage() {
   const [myList, setMyList] = useState([]);
   const [myName, setMyName] = useState('');
+  const navigate = useNavigate();
+  const hasAlerted = useRef(false);
 
   useEffect(() => {
-    // 1. 로컬스토리지에서 내 이름 가져오기
     const savedName = localStorage.getItem('myUsername');
+    
+    // 1. 로그인 보안 로직
+    if (!savedName) {
+      if (!hasAlerted.current) {
+        alert("로그인이 필요합니다!");
+        hasAlerted.current = true;
+        navigate('/');
+      }
+      return;
+    }
+
     setMyName(savedName);
 
-    // 2. 서버에서 전체 데이터 가져오기
+    // 2. 내 메시지 가져오기 및 "입장" 필터링
     const fetchMyMessages = async () => {
       try {
         const response = await fetch('http://127.0.0.1:5001/api/users');
         const allData = await response.json();
         
-        // 3. 전체 데이터 중 내 이름(savedName)과 일치하는 것만 필터링
-        const filteredData = allData.filter(item => item.name === savedName);
+        // 내 이름과 일치하고 "입장"이 아닌 메시지만 필터링
+        const filteredData = allData.filter(item => 
+          item.name === savedName && item.message !== "입장"
+        );
         setMyList(filteredData);
       } catch (error) {
-        console.error("데이터를 가져오는데 실패했습니다:", error);
+        console.error("데이터 로드 실패:", error);
       }
     };
 
-    if (savedName) fetchMyMessages();
-  }, []);
+    fetchMyMessages();
+  }, [navigate]);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -53,7 +67,7 @@ function MyPage() {
 
       <Link to="/">
         <button>🏠 홈으로</button>
-        </Link>
+      </Link>
     </div>
   );
 }
